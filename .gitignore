@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Environment secrets (keep .env.example in git, not the real .env)
+services/backend/.env
+services/db/.env
+
+# Docker
+*.log
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
