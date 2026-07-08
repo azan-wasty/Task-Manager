@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: task-manager-db
+    restart: unless-stopped
+    env_file:
+      - ./services/db/.env
+    environment:
+      # Also settable directly here; env_file above already supplies these.
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-task_manager}
+    ports:
+      - "5432:5432"
+    volumes:
+      # Named volume -> data survives `docker compose down` / restarts.
+      - pgdata:/var/lib/postgresql/data
+      # Optional one-time init script.
+      - ./services/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-task_manager}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - task-manager-net
+
+  backend:
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile
+    container_name: task-manager-backend
+    restart: unless-stopped
+    env_file:
+      - ./services/backend/.env
+    environment:
+      # POSTGRES_HOST=db -> "db" is the service name above, resolved via
+      # Docker Compose's internal DNS. This is what makes container-to-
+      # container networking work instead of using "localhost".
+      POSTGRES_HOST: db
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - task-manager-net
+
+networks:
+  task-manager-net:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
