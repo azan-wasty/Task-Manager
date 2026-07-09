@@ -20,12 +20,23 @@ class Task(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    status = Column(Enum(TaskStatus), nullable=False, default=TaskStatus.PENDING)
+
+    status = Column(
+        Enum(
+            TaskStatus,
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+            name="taskstatus",
+        ),
+        nullable=False,
+        default=TaskStatus.PENDING,
+    )
 
     # Bonus: soft delete instead of hard-deleting rows
     is_deleted = Column(Boolean, nullable=False, default=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
     )

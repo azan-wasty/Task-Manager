@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 from app.core.config import settings
-from app.database.session import Base, engine, SessionLocal
-from app.models import task as task_model  # noqa: F401  (registers the model with Base)
+from app.database.session import SessionLocal
+from app.models import task as task_model  # noqa: F401
 from app.routers import tasks
 
 app = FastAPI(
@@ -14,13 +14,6 @@ app = FastAPI(
 )
 
 app.include_router(tasks.router)
-
-
-@app.on_event("startup")
-def on_startup():
-    # For an assignment/demo app, create tables automatically on startup.
-    # In a production app you'd use Alembic migrations instead.
-    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/", tags=["Root"])

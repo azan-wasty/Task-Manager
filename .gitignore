@@ -8,6 +8,7 @@ venv/
 # Environment secrets (keep .env.example in git, not the real .env)
 services/backend/.env
 services/db/.env
+services/pgadmin/.env
 
 # Docker
 *.log
